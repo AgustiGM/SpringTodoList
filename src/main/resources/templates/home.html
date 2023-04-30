@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Todo List</title>
+    <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+
+    th,
+    td {
+      padding: 0.75rem;
+      vertical-align: middle;
+      border-top: 1px solid #dee2e6;
+      text-align: left;
+    }
+
+    th {
+      font-weight: bold;
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    tbody tr:nth-of-type(even) {
+      background-color: #f8f9fa;
+    }
+
+    td:last-child {
+      text-align: center;
+    }
+
+    td span {
+      font-weight: bold;
+    }
+
+    td span.text-success {
+      color: #28a745;
+    }
+
+    td span.text-danger {
+      color: #dc3545;
+    }
+    .pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination a {
+  display: block;
+  padding: 5px 10px;
+  margin: 0 5px;
+  border-radius: 5px;
+  color: #fff;
+  background-color: #007bff;
+  text-decoration: none;
+}
+
+.pagination a.active {
+  background-color: #007bff;
+}
+
+.pagination a:hover {
+  background-color: #0069d9;
+}
+
+  </style>
+</head>
+<body>
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <h1>Todo List</h1>
+    <form th:if="${session.user == null}" method="get" th:action="@{/login}">
+        <button type="submit">Login</button>
+    </form>
+</div>
+<p th:text="${session.user.username}" th:unless="${session.user == null}"> . </p>
+<a th:if="${session.user != null}" th:href="@{/todos/new}">Add Todo</a>
+<table>
+    <thead>
+    <tr>
+        <th>    <a th:href="@{/todos(sort=title,page=${currentPage})}">Title</a>
+            <form th:action="@{/todos}" method="get">
+                <input type="text" id="titleFilter" name="title" placeholder="Filter by title">
+                <button type="submit">Filter</button>
+            </form>
+        </th>
+        <th><a th:href="@{/todos(sort=user.username,page=${currentPage})}">User</a>
+            <form th:action="@{/todos}" method="get">
+                <input type="text" id="usernameFilter"  name="username" placeholder="Filter by username">
+                <button type="submit">Filter</button>
+            </form>
+        </th>
+        <th><a th:href="@{/todos(sort=user.address.country,page=${currentPage})}">Country</a></th>
+        <th><a th:href="@{/todos(sort=completed,page=${currentPage})}">Status</a></th>
+        <th th:if="${session.user != null}">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="todo : ${todos}">
+        <td th:text="${todo.title}">Title</td>
+        <td th:text="${todo.user.username}">User</td>
+        <td th:text="${todo.user.address.country}">Country</td>
+        <td>
+            <span th:text="${todo.completed ? 'Complete' : 'Incomplete'}" th:class="${todo.completed ? 'text-success' : 'text-danger'}"></span>
+        </td>
+        <td th:if="${session.user != null}">
+            <a th:href="@{/todos/{id}/edit(id=${todo.id})}" th:if="${session.user != null and todo.user.username == session.user.username}">Edit</a>
+            <form th:action="@{/todos/{id}/delete(id=${todo.id})}" method="POST" style="display: inline-block;">
+                <input type="hidden" name="_method" value="DELETE"/>
+                <button type="submit" th:if="${session.user != null and todo.user.username == session.user.username}">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<nav aria-label="Page navigation">
+    <div class="pagination">
+        <ul>
+            <li th:class="${currentPage == 0} ? disabled" style="display: inline-block;"><a th:if="${currentPage > 0}" th:href="@{/todos(page=${currentPage - 1}, sort=${sort})}">&laquo;</a></li>
+            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:class="${currentPage == i} ? active" style="display: inline-block;">
+                <a th:href="@{/todos(page=${i}, sort=${sort})}" th:text="${i + 1}"></a>
+            </li>
+            <li th:class="${currentPage + 1 == totalPages} ? disabled" style="display: inline-block;"><a th:if="${currentPage +1 < totalPages}" th:href="@{/todos(page=${currentPage + 1}, sort=${sort})}">&raquo;</a></li>
+        </ul>
+    </div>
+
+</nav>
+</body>
+</html>
