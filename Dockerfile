@@ -1,5 +1,4 @@
-
-FROM maven:3.6.3-jdk-11-slim AS build
+FROM maven:3.8.3-openjdk-17-slim AS build
 WORKDIR /app
 
 COPY pom.xml .
@@ -8,7 +7,7 @@ COPY src/ ./src/
 RUN mvn clean package
 
 # Base image with JRE
-FROM openjdk:11-jre-slim AS runtime
+FROM adoptopenjdk:17-jre-hotspot AS runtime
 
 # Copy the artifact from the build image to the runtime image
 COPY --from=build /app/target/test-0.0.1-SNAPSHOT.jar /app/test-0.0.1-SNAPSHOT.jar
